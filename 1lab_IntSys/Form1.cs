@@ -1,67 +1,91 @@
+using System.Diagnostics;
+using static System.Runtime.CompilerServices.RuntimeHelpers;
+
 namespace _1lab_IntSys
 {
-    public partial class Form1 : Form
+    public partial class Keyboard : Form
     {
-        public Form1()
+        private int keyCode;
+        private Button button;
+        private System.Windows.Forms.Timer _timer;
+        private Stopwatch stopwatch;
+        private int clickCount = 0;
+        private float avgTime;
+
+        private List<long> reactionTimes = new List<long>();
+        private List<Button> up_buttons = new List<Button>();
+        private List<Button> r_buttons = new List<Button>();
+        private List<Button> all_buttons = new List<Button>();
+
+
+        public Keyboard()
         {
             InitializeComponent();
-        }
-
-        private void Form1_KeyDown(object sender, KeyEventArgs e)
-        {
-            // Получаем код нажатой клавиши
-            int keyValue = -1;
-            switch (e.KeyCode)
+            SetupKey();
+            textBox.AppendText($"Вас приветствует тест определяющий реакцию пользователя на события от клавиатуры.\r\n" +
+                                $"В тесте представлено 10 событий, после чего подводится итог. \r\n");
+            for (int i = 0; i < Controls.Count; i++)
             {
-                case Keys.D0:
-                    keyValue = 0;
-                    break;
-                case Keys.D1:
-                    keyValue = 1;
-                    break;
-                case Keys.D2:
-                    keyValue = 2;
-                    break;
-                case Keys.D3:
-                    keyValue = 3;
-                    break;
-                case Keys.D4:
-                    keyValue = 4;
-                    break;
-                case Keys.D5:
-                    keyValue = 5;
-                    break;
-                case Keys.D6:
-                    keyValue = 6;
-                    break;
-                case Keys.D7:
-                    keyValue = 7;
-                    break;
-                case Keys.D8:
-                    keyValue = 8;
-                    break;
-                case Keys.D9:
-                    keyValue = 9;
-                    break;
+                if (Controls[i] is Button)
+                {
+                    all_buttons.Add((Button)Controls[i]);
+                }
             }
 
-            // Если нажата цифровая клавиша от 0 до 9
-            if (keyValue >= 0 && keyValue <= 9)
+            SetupTimer();
+        }
+
+        private void SetupKey()
+        {
+            this.KeyPreview = true;
+            this.KeyDown += Keyboard_KeyDown;
+        }
+
+        private void SetupTimer()
+        {
+            _timer = new System.Windows.Forms.Timer();
+            _timer.Interval = new Random().Next(2000, 3000);
+            _timer.Tick += timer_Tick;
+            _timer.Start();
+        }
+
+        private void stopTest()
+        {
+            textBox.AppendText($"\n\nТест завершен, среднее время реакции {avgTime}\r\n");
+            
+        }
+
+        private void Keyboard_KeyDown(object sender, KeyEventArgs e)
+        {
+            if ((int)e.KeyCode == keyCode)
             {
-                // Изменяем цвет соответствующей кнопки
-                ChangeButtonColor(keyValue);
+                if (stopwatch != null && stopwatch.IsRunning)
+                {
+                    stopwatch.Stop();
+                    button.BackColor = DefaultBackColor;
+
+                    reactionTimes.Add(stopwatch.ElapsedMilliseconds);
+                    avgTime =+ stopwatch.ElapsedMilliseconds;
+                    textBox.AppendText($"Время нажатия: {stopwatch.ElapsedMilliseconds} мс. \r\n");
+                    clickCount++;
+                }
+                if (clickCount == 10) { stopTest(); }
+                _timer.Interval = new Random().Next(2000, 3000);
+                _timer.Start();
             }
         }
 
-        private void ChangeButtonColor(int buttonNumber)
+        private void timer_Tick(object sender, EventArgs e)
         {
-            // Находим кнопку с соответствующим номером
-            string buttonName = "button" + buttonNumber;
-            Button targetButton = Controls.Find(buttonName, true)[0] as Button;
+            timer.Stop();
+            Random random = new Random();
 
-            // Меняем цвет кнопки на черный
-            targetButton.BackColor = Color.Black;
+            button = all_buttons[random.Next(all_buttons.Count)];
+            keyCode = 48 + Int32.Parse(button.Text);
+            button.BackColor = Color.BlueViolet;
+            
+
+            stopwatch = Stopwatch.StartNew();
         }
-
     }
 }
