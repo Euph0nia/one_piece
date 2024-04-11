@@ -12,11 +12,11 @@ namespace _1lab_IntSys
         private Stopwatch stopwatch;
         private int clickCount = 0;
         private float avgTime;
-        //private bool bRestart = false;
 
         //private List<long> reactionTimes = new List<long>();
+        private List<Button> h_buttons = new List<Button>();
+        private List<Button> r_buttons = new List<Button>();
         private List<Button> all_buttons = new List<Button>();
-
 
         public Keyboard()
         {
@@ -25,15 +25,28 @@ namespace _1lab_IntSys
             SetupKey();
             textBox.AppendText($"Вас приветствует тест определяющий реакцию пользователя на события от клавиатуры.\r\n" +
                                 $"В тесте представлено 10 событий, после чего подводится итог. \r\n");
+
             for (int i = 0; i < Controls.Count; i++)
             {
                 if (Controls[i] is Button)
                 {
-                    all_buttons.Add((Button)Controls[i]);
+                    Button button = (Button)Controls[i];
+                    all_buttons.Add(button); 
+
+                    if (button.Top < 50) 
+                    {
+                        h_buttons.Add(button);
+                    }
+                    else 
+                    {
+                        r_buttons.Add(button);
+                    }
                 }
             }
+
             SetupTimer();
         }
+
 
         private void SetupKey()
         {
@@ -51,45 +64,65 @@ namespace _1lab_IntSys
 
         private void stopTest()
         {
-            textBox.AppendText($"\n\nТест завершен, среднее время реакции {avgTime / clickCount} мс.\r\n" +
-                                $"Если хотите пройти еще раз, нажмите Enter\r\n");
+            textBox.AppendText($"\n\nТест завершен, среднее время реакции {avgTime / clickCount} мс.\r\n");
             for (int i = 0; i < 20; i++)
             {
                 all_buttons[i].BackColor = DefaultBackColor;
             }
             _timer.Stop();
-            timer.Stop();
+            //timer.Stop();
             stopwatch.Stop();
-            //bRestart = true;
         }
 
         private void Keyboard_KeyDown(object sender, KeyEventArgs e)
         {
-            if (clickCount == 10) { stopTest(); }
-            //else if (e.KeyCode == Keys.Enter /*&& bRestart == true*/)
-            //{
-            //    Application.Restart();
-            //}
-            else if ((int)e.KeyCode == keyCode)
+            if (clickCount == 10)
             {
+                stopTest();
+            }
+            else if (e.KeyCode == Keys.Enter && this.ContainsFocus)
+            {
+                Application.Restart();
+            }
+            else if ((e.KeyCode >= Keys.NumPad0 && e.KeyCode <= Keys.NumPad9) ||
+                     (e.KeyCode >= Keys.D0 && e.KeyCode <= Keys.D9))
+            {
+                int keyValue;
+                if (e.KeyCode >= Keys.NumPad0 && e.KeyCode <= Keys.NumPad9)
+                {
+                    keyValue = (int)e.KeyCode - (int)Keys.NumPad0;
+                }
+                else
+                {
+                    keyValue = (int)e.KeyCode - (int)Keys.D0;
+                }
+
                 if (stopwatch != null && stopwatch.IsRunning)
                 {
-                    stopwatch.Stop();
-                    button.BackColor = DefaultBackColor;
-                    //reactionTimes.Add(stopwatch.ElapsedMilliseconds);
-                    textBox.AppendText($"Время нажатия: {stopwatch.ElapsedMilliseconds} мс. \r\n");
-                    clickCount++;
-                    avgTime += stopwatch.ElapsedMilliseconds;
+                    if (button != null && Int32.Parse(button.Text) != keyValue)
+                    {
+                        MessageBox.Show($"Неверно нажатая клавиша! Ожидалась кнопка {button.Text}, нажата кнопка {(char)(keyValue + '0')}.\r\n");
+                    }
+                    else
+                    {
+                        stopwatch.Stop();
+                        button.BackColor = DefaultBackColor;
+                        textBox.AppendText($"Время нажатия: {stopwatch.ElapsedMilliseconds} мс. \r\n");
+                        clickCount++;
+                        avgTime += stopwatch.ElapsedMilliseconds;
+                    }
                 }
                 _timer.Interval = new Random().Next(2000, 3000);
                 _timer.Start();
             }
         }
 
+
+
         private void timer_Tick(object sender, EventArgs e)
         {
-            timer.Stop();
-            if(button != null) { button.BackColor = DefaultBackColor; }
+            _timer.Stop();
+            if (button != null) { button.BackColor = DefaultBackColor; }
             Random random = new Random();
 
             button = all_buttons[random.Next(all_buttons.Count)];
