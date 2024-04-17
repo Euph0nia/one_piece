@@ -112,12 +112,17 @@ namespace _1lab_IntSys
                         avgTime += stopwatch.ElapsedMilliseconds;
                     }
                 }
+                    stopwatch.Stop();
+                    button.BackColor = DefaultBackColor;
+                    //reactionTimes.Add(stopwatch.ElapsedMilliseconds);
+                    textBox.AppendText($"Время нажатия: {stopwatch.ElapsedMilliseconds} мс. \r\n");
+                    clickCount++;
+                    avgTime += stopwatch.ElapsedMilliseconds;
+                }
                 _timer.Interval = new Random().Next(2000, 3000);
                 _timer.Start();
             }
         }
-
-
 
         private void timer_Tick(object sender, EventArgs e)
         {
