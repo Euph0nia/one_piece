@@ -295,6 +295,7 @@
             checkedListBox1.Name = "checkedListBox1";
             checkedListBox1.Size = new Size(153, 184);
             checkedListBox1.TabIndex = 22;
+            checkedListBox1.ItemCheck += checkedListBox1_ItemCheck;
             // 
             // Keyboard
             // 
