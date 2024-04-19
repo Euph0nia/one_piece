@@ -6,6 +6,12 @@ namespace _1lab_IntSys
 {
     public partial class Keyboard : Form
     {
+        public enum DigitBlock
+        {
+            Top,    // Верхний цифровой блок
+            Numpad  // NumPad блок
+        }
+
         private int mode;
         private int keyCode;
         private Button button;
@@ -14,6 +20,7 @@ namespace _1lab_IntSys
         private int clickCount = 0;
         private float avgTime;
         private int kekwCounter = 0;
+        private DigitBlock currentDigitBlock;
 
         //private List<long> reactionTimes = new List<long>();
         private List<Button> h_buttons = new List<Button>();
@@ -108,13 +115,22 @@ namespace _1lab_IntSys
             {
                 stopTest();
             }
-            else if (e.KeyCode == Keys.Enter && this.ContainsFocus)
-            {
-                Application.Restart();
-            }
+            //else if (e.KeyCode == Keys.Enter && this.ContainsFocus)
+            //{
+            //    Application.Restart();
+            //}
             else if ((e.KeyCode >= Keys.NumPad0 && e.KeyCode <= Keys.NumPad9) ||
                      (e.KeyCode >= Keys.D0 && e.KeyCode <= Keys.D9))
             {
+                if (e.KeyCode >= Keys.NumPad0 && e.KeyCode <= Keys.NumPad9)
+                {
+                    currentDigitBlock = DigitBlock.Numpad;
+                }
+                else
+                {
+                    currentDigitBlock = DigitBlock.Top;
+                }
+
                 int keyValue;
                 if (e.KeyCode >= Keys.NumPad0 && e.KeyCode <= Keys.NumPad9)
                 {
@@ -127,7 +143,9 @@ namespace _1lab_IntSys
 
                 if (stopwatch != null && stopwatch.IsRunning)
                 {
-                    if (button != null && Int32.Parse(button.Text) == keyValue)
+                    if (button != null && Int32.Parse(button.Text) == keyValue &&
+                        ((currentDigitBlock == DigitBlock.Top && h_buttons.Contains(button)) ||
+                        (currentDigitBlock == DigitBlock.Numpad && r_buttons.Contains(button))))
                     {
                         stopwatch.Stop();
                         button.BackColor = DefaultBackColor;
@@ -138,11 +156,11 @@ namespace _1lab_IntSys
                         _timer.Interval = new Random().Next(2000, 3000);
                         _timer.Start();
                     }
-                    else if (button != null && Int32.Parse(button.Text) != keyValue)
+                    else
                     {
                         kekwCounter++;
                         if (kekwCounter % 2 == 1)
-                            MessageBox.Show($"Неверно нажатая клавиша! Ожидалась кнопка {button.Text}, нажата кнопка {(char)(keyValue + '0')}.\r\n");
+                            MessageBox.Show($"Неверно нажатая клавиша! Ожидалась кнопка {button.Text}.\r\n");
                     }
                 }
             }
@@ -163,6 +181,8 @@ namespace _1lab_IntSys
                     button = button_up_7;
                     keyCode = (int)Keys.D7;
                     button.BackColor = Color.Tan;
+                    if (Regex.IsMatch(test, "^[^up]+$");)
+
                     break;
                 case 1:
                     button = h_buttons[random.Next(h_buttons.Count)];
